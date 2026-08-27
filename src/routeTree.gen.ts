@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as OnboardingCategoriesRouteImport } from './routes/onboarding.categories'
 import { Route as OnboardingLanguageRouteImport } from './routes/onboarding.language'
@@ -17,6 +18,11 @@ import { Route as OnboardingLanguageRouteImport } from './routes/onboarding.lang
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExploreRoute = ExploreRouteImport.update({
+  id: '/explore',
+  path: '/explore',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HomeRoute = HomeRouteImport.update({
@@ -37,12 +43,14 @@ const OnboardingLanguageRoute = OnboardingLanguageRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/explore': typeof ExploreRoute
   '/home': typeof HomeRoute
   '/onboarding/categories': typeof OnboardingCategoriesRoute
   '/onboarding/language': typeof OnboardingLanguageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/explore': typeof ExploreRoute
   '/home': typeof HomeRoute
   '/onboarding/categories': typeof OnboardingCategoriesRoute
   '/onboarding/language': typeof OnboardingLanguageRoute
@@ -50,18 +58,30 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/explore': typeof ExploreRoute
   '/home': typeof HomeRoute
   '/onboarding/categories': typeof OnboardingCategoriesRoute
   '/onboarding/language': typeof OnboardingLanguageRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/home' | '/onboarding/categories' | '/onboarding/language'
+  fullPaths:
+    | '/'
+    | '/explore'
+    | '/home'
+    | '/onboarding/categories'
+    | '/onboarding/language'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/home' | '/onboarding/categories' | '/onboarding/language'
+  to:
+    | '/'
+    | '/explore'
+    | '/home'
+    | '/onboarding/categories'
+    | '/onboarding/language'
   id:
     | '__root__'
     | '/'
+    | '/explore'
     | '/home'
     | '/onboarding/categories'
     | '/onboarding/language'
@@ -69,6 +89,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ExploreRoute: typeof ExploreRoute
   HomeRoute: typeof HomeRoute
   OnboardingCategoriesRoute: typeof OnboardingCategoriesRoute
   OnboardingLanguageRoute: typeof OnboardingLanguageRoute
@@ -81,6 +102,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/explore': {
+      id: '/explore'
+      path: '/explore'
+      fullPath: '/explore'
+      preLoaderRoute: typeof ExploreRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/home': {
@@ -109,6 +137,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ExploreRoute: ExploreRoute,
   HomeRoute: HomeRoute,
   OnboardingCategoriesRoute: OnboardingCategoriesRoute,
   OnboardingLanguageRoute: OnboardingLanguageRoute,
