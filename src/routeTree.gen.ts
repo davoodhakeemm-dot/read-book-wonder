@@ -15,6 +15,9 @@ import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as LanguagesRouteImport } from './routes/languages'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as BookBookIdRouteImport } from './routes/book.$bookId'
+import { Route as CategorySlugRouteImport } from './routes/category.$slug'
+import { Route as LanguageCodeRouteImport } from './routes/language.$code'
 import { Route as OnboardingCategoriesRouteImport } from './routes/onboarding.categories'
 import { Route as OnboardingLanguageRouteImport } from './routes/onboarding.language'
 
@@ -48,6 +51,21 @@ const SearchRoute = SearchRouteImport.update({
   path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BookBookIdRoute = BookBookIdRouteImport.update({
+  id: '/book/$bookId',
+  path: '/book/$bookId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CategorySlugRoute = CategorySlugRouteImport.update({
+  id: '/category/$slug',
+  path: '/category/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LanguageCodeRoute = LanguageCodeRouteImport.update({
+  id: '/language/$code',
+  path: '/language/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OnboardingCategoriesRoute = OnboardingCategoriesRouteImport.update({
   id: '/onboarding/categories',
   path: '/onboarding/categories',
@@ -66,6 +84,9 @@ export interface FileRoutesByFullPath {
   '/home': typeof HomeRoute
   '/languages': typeof LanguagesRoute
   '/search': typeof SearchRoute
+  '/book/$bookId': typeof BookBookIdRoute
+  '/category/$slug': typeof CategorySlugRoute
+  '/language/$code': typeof LanguageCodeRoute
   '/onboarding/categories': typeof OnboardingCategoriesRoute
   '/onboarding/language': typeof OnboardingLanguageRoute
 }
@@ -76,6 +97,9 @@ export interface FileRoutesByTo {
   '/home': typeof HomeRoute
   '/languages': typeof LanguagesRoute
   '/search': typeof SearchRoute
+  '/book/$bookId': typeof BookBookIdRoute
+  '/category/$slug': typeof CategorySlugRoute
+  '/language/$code': typeof LanguageCodeRoute
   '/onboarding/categories': typeof OnboardingCategoriesRoute
   '/onboarding/language': typeof OnboardingLanguageRoute
 }
@@ -87,6 +111,9 @@ export interface FileRoutesById {
   '/home': typeof HomeRoute
   '/languages': typeof LanguagesRoute
   '/search': typeof SearchRoute
+  '/book/$bookId': typeof BookBookIdRoute
+  '/category/$slug': typeof CategorySlugRoute
+  '/language/$code': typeof LanguageCodeRoute
   '/onboarding/categories': typeof OnboardingCategoriesRoute
   '/onboarding/language': typeof OnboardingLanguageRoute
 }
@@ -99,6 +126,9 @@ export interface FileRouteTypes {
     | '/home'
     | '/languages'
     | '/search'
+    | '/book/$bookId'
+    | '/category/$slug'
+    | '/language/$code'
     | '/onboarding/categories'
     | '/onboarding/language'
   fileRoutesByTo: FileRoutesByTo
@@ -109,6 +139,9 @@ export interface FileRouteTypes {
     | '/home'
     | '/languages'
     | '/search'
+    | '/book/$bookId'
+    | '/category/$slug'
+    | '/language/$code'
     | '/onboarding/categories'
     | '/onboarding/language'
   id:
@@ -119,6 +152,9 @@ export interface FileRouteTypes {
     | '/home'
     | '/languages'
     | '/search'
+    | '/book/$bookId'
+    | '/category/$slug'
+    | '/language/$code'
     | '/onboarding/categories'
     | '/onboarding/language'
   fileRoutesById: FileRoutesById
@@ -130,6 +166,9 @@ export interface RootRouteChildren {
   HomeRoute: typeof HomeRoute
   LanguagesRoute: typeof LanguagesRoute
   SearchRoute: typeof SearchRoute
+  BookBookIdRoute: typeof BookBookIdRoute
+  CategorySlugRoute: typeof CategorySlugRoute
+  LanguageCodeRoute: typeof LanguageCodeRoute
   OnboardingCategoriesRoute: typeof OnboardingCategoriesRoute
   OnboardingLanguageRoute: typeof OnboardingLanguageRoute
 }
@@ -178,6 +217,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/book/$bookId': {
+      id: '/book/$bookId'
+      path: '/book/$bookId'
+      fullPath: '/book/$bookId'
+      preLoaderRoute: typeof BookBookIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/category/$slug': {
+      id: '/category/$slug'
+      path: '/category/$slug'
+      fullPath: '/category/$slug'
+      preLoaderRoute: typeof CategorySlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/language/$code': {
+      id: '/language/$code'
+      path: '/language/$code'
+      fullPath: '/language/$code'
+      preLoaderRoute: typeof LanguageCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/onboarding/categories': {
       id: '/onboarding/categories'
       path: '/onboarding/categories'
@@ -202,6 +262,9 @@ const rootRouteChildren: RootRouteChildren = {
   HomeRoute: HomeRoute,
   LanguagesRoute: LanguagesRoute,
   SearchRoute: SearchRoute,
+  BookBookIdRoute: BookBookIdRoute,
+  CategorySlugRoute: CategorySlugRoute,
+  LanguageCodeRoute: LanguageCodeRoute,
   OnboardingCategoriesRoute: OnboardingCategoriesRoute,
   OnboardingLanguageRoute: OnboardingLanguageRoute,
 }
