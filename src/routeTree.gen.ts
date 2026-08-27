@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OnboardingCategoriesRouteImport } from './routes/onboarding.categories'
 import { Route as OnboardingLanguageRouteImport } from './routes/onboarding.language'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingCategoriesRoute = OnboardingCategoriesRouteImport.update({
+  id: '/onboarding/categories',
+  path: '/onboarding/categories',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingLanguageRoute = OnboardingLanguageRouteImport.update({
@@ -25,27 +31,31 @@ const OnboardingLanguageRoute = OnboardingLanguageRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/onboarding/categories': typeof OnboardingCategoriesRoute
   '/onboarding/language': typeof OnboardingLanguageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/onboarding/categories': typeof OnboardingCategoriesRoute
   '/onboarding/language': typeof OnboardingLanguageRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/onboarding/categories': typeof OnboardingCategoriesRoute
   '/onboarding/language': typeof OnboardingLanguageRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/onboarding/language'
+  fullPaths: '/' | '/onboarding/categories' | '/onboarding/language'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/onboarding/language'
-  id: '__root__' | '/' | '/onboarding/language'
+  to: '/' | '/onboarding/categories' | '/onboarding/language'
+  id: '__root__' | '/' | '/onboarding/categories' | '/onboarding/language'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  OnboardingCategoriesRoute: typeof OnboardingCategoriesRoute
   OnboardingLanguageRoute: typeof OnboardingLanguageRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/categories': {
+      id: '/onboarding/categories'
+      path: '/onboarding/categories'
+      fullPath: '/onboarding/categories'
+      preLoaderRoute: typeof OnboardingCategoriesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding/language': {
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  OnboardingCategoriesRoute: OnboardingCategoriesRoute,
   OnboardingLanguageRoute: OnboardingLanguageRoute,
 }
 export const routeTree = rootRouteImport
