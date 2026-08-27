@@ -79,7 +79,7 @@ export const BOOKS: Book[] = [
     year: 1851,
     publisher: "Harper & Brothers",
     added: "2026-06-14",
-    tags: ["popular", "literature" as never] as Book["tags"],
+    tags: ["popular", "recommended"],
     description:
       "One ship, one whale, one obsession. Melville's sea epic is part adventure, part encyclopedia, part sermon on the things that hunt us back.",
     cover: { from: "#0f3b4c", to: "#1d6f86", ink: "#e6f7ff" },
