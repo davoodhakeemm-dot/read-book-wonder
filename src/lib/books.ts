@@ -1,3 +1,4 @@
+import { EXTRA_BOOKS } from "./books-extra";
 import type { CategorySlug, LanguageCode } from "./catalog";
 
 export type Book = {
@@ -20,7 +21,7 @@ export type Book = {
 
 const p = (...paras: string[]) => paras;
 
-export const BOOKS: Book[] = [
+const BASE_BOOKS: Book[] = [
   {
     id: "sherlock-scandal",
     title: "A Scandal in Bohemia",
@@ -574,6 +575,8 @@ export const BOOKS: Book[] = [
     ),
   },
 ];
+
+export const BOOKS: Book[] = [...BASE_BOOKS, ...EXTRA_BOOKS];
 
 export const bookById = (id: string) => BOOKS.find((b) => b.id === id);
 
