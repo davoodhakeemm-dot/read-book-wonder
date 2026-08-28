@@ -154,6 +154,7 @@ function BookDetails() {
             <div className="mt-5 flex flex-wrap gap-2">
               <Link
                 to="/read/$bookId"
+                search={{}}
                 params={{ bookId: book.id }}
                 className="press flex-1 rounded-full bg-brand px-5 py-3 text-center text-sm font-bold text-primary-foreground shadow-lift sm:flex-none sm:px-8"
               >

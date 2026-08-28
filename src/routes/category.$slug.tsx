@@ -106,6 +106,7 @@ function CategoryPage() {
               </p>
               <Link
                 to="/read/$bookId"
+                search={{}}
                 params={{ bookId: featured.id }}
                 className="press mt-4 inline-flex rounded-full bg-brand px-4 py-2 text-xs font-bold text-primary-foreground"
               >
