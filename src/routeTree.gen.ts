@@ -12,14 +12,20 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as ExploreRouteImport } from './routes/explore'
+import { Route as FavoritesRouteImport } from './routes/favorites'
+import { Route as HistoryRouteImport } from './routes/history'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as LanguagesRouteImport } from './routes/languages'
+import { Route as LibraryRouteImport } from './routes/library'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as BookBookIdRouteImport } from './routes/book.$bookId'
 import { Route as CategorySlugRouteImport } from './routes/category.$slug'
 import { Route as LanguageCodeRouteImport } from './routes/language.$code'
 import { Route as OnboardingCategoriesRouteImport } from './routes/onboarding.categories'
 import { Route as OnboardingLanguageRouteImport } from './routes/onboarding.language'
+import { Route as ReadBookIdRouteImport } from './routes/read.$bookId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -36,6 +42,16 @@ const ExploreRoute = ExploreRouteImport.update({
   path: '/explore',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FavoritesRoute = FavoritesRouteImport.update({
+  id: '/favorites',
+  path: '/favorites',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HomeRoute = HomeRouteImport.update({
   id: '/home',
   path: '/home',
@@ -46,9 +62,24 @@ const LanguagesRoute = LanguagesRouteImport.update({
   path: '/languages',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LibraryRoute = LibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BookBookIdRoute = BookBookIdRouteImport.update({
@@ -76,46 +107,69 @@ const OnboardingLanguageRoute = OnboardingLanguageRouteImport.update({
   path: '/onboarding/language',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReadBookIdRoute = ReadBookIdRouteImport.update({
+  id: '/read/$bookId',
+  path: '/read/$bookId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/categories': typeof CategoriesRoute
   '/explore': typeof ExploreRoute
+  '/favorites': typeof FavoritesRoute
+  '/history': typeof HistoryRoute
   '/home': typeof HomeRoute
   '/languages': typeof LanguagesRoute
+  '/library': typeof LibraryRoute
+  '/profile': typeof ProfileRoute
   '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
   '/book/$bookId': typeof BookBookIdRoute
   '/category/$slug': typeof CategorySlugRoute
   '/language/$code': typeof LanguageCodeRoute
   '/onboarding/categories': typeof OnboardingCategoriesRoute
   '/onboarding/language': typeof OnboardingLanguageRoute
+  '/read/$bookId': typeof ReadBookIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/categories': typeof CategoriesRoute
   '/explore': typeof ExploreRoute
+  '/favorites': typeof FavoritesRoute
+  '/history': typeof HistoryRoute
   '/home': typeof HomeRoute
   '/languages': typeof LanguagesRoute
+  '/library': typeof LibraryRoute
+  '/profile': typeof ProfileRoute
   '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
   '/book/$bookId': typeof BookBookIdRoute
   '/category/$slug': typeof CategorySlugRoute
   '/language/$code': typeof LanguageCodeRoute
   '/onboarding/categories': typeof OnboardingCategoriesRoute
   '/onboarding/language': typeof OnboardingLanguageRoute
+  '/read/$bookId': typeof ReadBookIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/categories': typeof CategoriesRoute
   '/explore': typeof ExploreRoute
+  '/favorites': typeof FavoritesRoute
+  '/history': typeof HistoryRoute
   '/home': typeof HomeRoute
   '/languages': typeof LanguagesRoute
+  '/library': typeof LibraryRoute
+  '/profile': typeof ProfileRoute
   '/search': typeof SearchRoute
+  '/settings': typeof SettingsRoute
   '/book/$bookId': typeof BookBookIdRoute
   '/category/$slug': typeof CategorySlugRoute
   '/language/$code': typeof LanguageCodeRoute
   '/onboarding/categories': typeof OnboardingCategoriesRoute
   '/onboarding/language': typeof OnboardingLanguageRoute
+  '/read/$bookId': typeof ReadBookIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -123,54 +177,78 @@ export interface FileRouteTypes {
     | '/'
     | '/categories'
     | '/explore'
+    | '/favorites'
+    | '/history'
     | '/home'
     | '/languages'
+    | '/library'
+    | '/profile'
     | '/search'
+    | '/settings'
     | '/book/$bookId'
     | '/category/$slug'
     | '/language/$code'
     | '/onboarding/categories'
     | '/onboarding/language'
+    | '/read/$bookId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/categories'
     | '/explore'
+    | '/favorites'
+    | '/history'
     | '/home'
     | '/languages'
+    | '/library'
+    | '/profile'
     | '/search'
+    | '/settings'
     | '/book/$bookId'
     | '/category/$slug'
     | '/language/$code'
     | '/onboarding/categories'
     | '/onboarding/language'
+    | '/read/$bookId'
   id:
     | '__root__'
     | '/'
     | '/categories'
     | '/explore'
+    | '/favorites'
+    | '/history'
     | '/home'
     | '/languages'
+    | '/library'
+    | '/profile'
     | '/search'
+    | '/settings'
     | '/book/$bookId'
     | '/category/$slug'
     | '/language/$code'
     | '/onboarding/categories'
     | '/onboarding/language'
+    | '/read/$bookId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CategoriesRoute: typeof CategoriesRoute
   ExploreRoute: typeof ExploreRoute
+  FavoritesRoute: typeof FavoritesRoute
+  HistoryRoute: typeof HistoryRoute
   HomeRoute: typeof HomeRoute
   LanguagesRoute: typeof LanguagesRoute
+  LibraryRoute: typeof LibraryRoute
+  ProfileRoute: typeof ProfileRoute
   SearchRoute: typeof SearchRoute
+  SettingsRoute: typeof SettingsRoute
   BookBookIdRoute: typeof BookBookIdRoute
   CategorySlugRoute: typeof CategorySlugRoute
   LanguageCodeRoute: typeof LanguageCodeRoute
   OnboardingCategoriesRoute: typeof OnboardingCategoriesRoute
   OnboardingLanguageRoute: typeof OnboardingLanguageRoute
+  ReadBookIdRoute: typeof ReadBookIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -196,6 +274,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExploreRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/favorites': {
+      id: '/favorites'
+      path: '/favorites'
+      fullPath: '/favorites'
+      preLoaderRoute: typeof FavoritesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/home': {
       id: '/home'
       path: '/home'
@@ -210,11 +302,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LanguagesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/library': {
+      id: '/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof LibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/search': {
       id: '/search'
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/book/$bookId': {
@@ -252,6 +365,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingLanguageRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/read/$bookId': {
+      id: '/read/$bookId'
+      path: '/read/$bookId'
+      fullPath: '/read/$bookId'
+      preLoaderRoute: typeof ReadBookIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -259,14 +379,20 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CategoriesRoute: CategoriesRoute,
   ExploreRoute: ExploreRoute,
+  FavoritesRoute: FavoritesRoute,
+  HistoryRoute: HistoryRoute,
   HomeRoute: HomeRoute,
   LanguagesRoute: LanguagesRoute,
+  LibraryRoute: LibraryRoute,
+  ProfileRoute: ProfileRoute,
   SearchRoute: SearchRoute,
+  SettingsRoute: SettingsRoute,
   BookBookIdRoute: BookBookIdRoute,
   CategorySlugRoute: CategorySlugRoute,
   LanguageCodeRoute: LanguageCodeRoute,
   OnboardingCategoriesRoute: OnboardingCategoriesRoute,
   OnboardingLanguageRoute: OnboardingLanguageRoute,
+  ReadBookIdRoute: ReadBookIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
