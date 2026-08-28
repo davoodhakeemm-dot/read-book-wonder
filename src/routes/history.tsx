@@ -40,7 +40,7 @@ function HistoryPage() {
                 <BookRow
                   key={`${h.bookId}-${h.at}`}
                   book={book}
-                  percent={p ? progressPercent(p.page, p.pages) : undefined}
+                  percent={progressPercent(p?.page ?? 0, p?.pages ?? 1)}
                   trailing={
                     <span className="shrink-0 text-[11px] font-semibold text-muted-foreground">
                       {new Date(h.at).toLocaleDateString()}

@@ -32,7 +32,7 @@ function FavoritesPage() {
       <div className="mx-auto max-w-6xl space-y-6 px-4 py-5 sm:px-6">
         <PageHeader
           title="Favorites"
-          subtitle={books.length ? `${books.length} saved book${books.length > 1 ? "s" : ""}` : undefined}
+          subtitle={`${books.length} saved book${books.length === 1 ? "" : "s"}`}
         />
         {books.length ? (
           <BookGrid books={books} />
