@@ -19,6 +19,9 @@ import { progressPercent, useLibrary } from "@/lib/library-store";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/read/$bookId")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    page: search.page === undefined ? undefined : Number(search.page),
+  }),
   head: () => ({
     meta: [
       { title: "Reader — Reading Corner" },
@@ -39,6 +42,7 @@ export const Route = createFileRoute("/read/$bookId")({
 function ReaderPage() {
   const { bookId } = Route.useParams();
   const book = bookById(bookId);
+  const { page: pageParam } = Route.useSearch();
   const navigate = useNavigate();
   const { state, ready, setReader, saveProgress, toggleBookmark, isBookmarked } = useLibrary();
   const [page, setPage] = useState(0);
@@ -51,10 +55,15 @@ function ReaderPage() {
 
   useEffect(() => {
     if (!ready || restored || !book) return;
+    if (pageParam !== undefined && Number.isFinite(pageParam)) {
+      setPage(Math.min(Math.max(0, Math.floor(pageParam)), Math.max(0, total - 1)));
+      setRestored(true);
+      return;
+    }
     const saved = state.progress[book.id];
     if (saved && saved.page < total) setPage(saved.page);
     setRestored(true);
-  }, [ready, restored, book, state.progress, total]);
+  }, [ready, restored, book, state.progress, total, pageParam]);
 
   useEffect(() => {
     if (!restored || !book || total === 0) return;
