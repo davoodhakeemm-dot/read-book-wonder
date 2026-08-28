@@ -10,7 +10,7 @@ import { bookById } from "@/lib/books";
 import { progressPercent, useLibrary } from "@/lib/library-store";
 import { cn } from "@/lib/utils";
 
-const TABS = ["Reading", "Favorites", "Completed", "Bookmarks"] as const;
+const TABS = ["Currently Reading", "Favorites", "Bookmarks", "Completed"] as const;
 
 export const Route = createFileRoute("/library")({
   head: () => ({
@@ -32,7 +32,7 @@ export const Route = createFileRoute("/library")({
 
 function LibraryPage() {
   const { state } = useLibrary();
-  const [tab, setTab] = useState<(typeof TABS)[number]>("Reading");
+  const [tab, setTab] = useState<(typeof TABS)[number]>("Currently Reading");
 
   const reading = Object.entries(state.progress)
     .filter(([id]) => !state.completed.includes(id))
@@ -62,7 +62,7 @@ function LibraryPage() {
           ))}
         </div>
 
-        {tab === "Reading" &&
+        {tab === "Currently Reading" &&
           (reading.length ? (
             <div className="space-y-3">
               {reading.map(([id, p]) => {
@@ -77,10 +77,12 @@ function LibraryPage() {
                       <Link
                         to="/read/$bookId"
                         params={{ bookId: book.id }}
-                        className="press grid size-10 shrink-0 place-items-center rounded-full bg-brand text-primary-foreground"
-                        aria-label={`Continue reading ${book.title}`}
+                        search={{ page: p.page }}
+                        className="press flex shrink-0 items-center gap-1.5 rounded-full bg-brand px-3 py-2 text-[11px] font-bold text-primary-foreground"
+                        aria-label={`Resume ${book.title} on page ${p.page + 1}`}
                       >
-                        <BookOpen className="size-[18px]" />
+                        <BookOpen className="size-[16px]" />
+                        <span className="hidden sm:inline">Resume p.{p.page + 1}</span>
                       </Link>
                     }
                   />
@@ -131,9 +133,15 @@ function LibraryPage() {
                     key={`${b.bookId}-${b.page}`}
                     book={book}
                     trailing={
-                      <span className="shrink-0 rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold text-secondary-foreground">
-                        Page {b.page + 1}
-                      </span>
+                      <Link
+                        to="/read/$bookId"
+                        params={{ bookId: book.id }}
+                        search={{ page: b.page }}
+                        className="press shrink-0 rounded-full bg-brand px-3 py-2 text-[11px] font-bold text-primary-foreground"
+                        aria-label={`Open ${book.title} at page ${b.page + 1}`}
+                      >
+                        Open p.{b.page + 1}
+                      </Link>
                     }
                   />
                 );
