@@ -13,12 +13,14 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as ChatRouteImport } from './routes/chat'
+import { Route as ChatSettingsRouteImport } from './routes/chat-settings'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as LanguagesRouteImport } from './routes/languages'
 import { Route as LibraryRouteImport } from './routes/library'
+import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -49,6 +51,11 @@ const ChatRoute = ChatRouteImport.update({
   path: '/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChatSettingsRoute = ChatSettingsRouteImport.update({
+  id: '/chat-settings',
+  path: '/chat-settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ExploreRoute = ExploreRouteImport.update({
   id: '/explore',
   path: '/explore',
@@ -77,6 +84,11 @@ const LanguagesRoute = LanguagesRouteImport.update({
 const LibraryRoute = LibraryRouteImport.update({
   id: '/library',
   path: '/library',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MessagesRoute = MessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -130,12 +142,14 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/categories': typeof CategoriesRoute
   '/chat': typeof ChatRoute
+  '/chat-settings': typeof ChatSettingsRoute
   '/explore': typeof ExploreRoute
   '/favorites': typeof FavoritesRoute
   '/history': typeof HistoryRoute
   '/home': typeof HomeRoute
   '/languages': typeof LanguagesRoute
   '/library': typeof LibraryRoute
+  '/messages': typeof MessagesRoute
   '/profile': typeof ProfileRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
@@ -151,12 +165,14 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/categories': typeof CategoriesRoute
   '/chat': typeof ChatRoute
+  '/chat-settings': typeof ChatSettingsRoute
   '/explore': typeof ExploreRoute
   '/favorites': typeof FavoritesRoute
   '/history': typeof HistoryRoute
   '/home': typeof HomeRoute
   '/languages': typeof LanguagesRoute
   '/library': typeof LibraryRoute
+  '/messages': typeof MessagesRoute
   '/profile': typeof ProfileRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
@@ -173,12 +189,14 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/categories': typeof CategoriesRoute
   '/chat': typeof ChatRoute
+  '/chat-settings': typeof ChatSettingsRoute
   '/explore': typeof ExploreRoute
   '/favorites': typeof FavoritesRoute
   '/history': typeof HistoryRoute
   '/home': typeof HomeRoute
   '/languages': typeof LanguagesRoute
   '/library': typeof LibraryRoute
+  '/messages': typeof MessagesRoute
   '/profile': typeof ProfileRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
@@ -196,12 +214,14 @@ export interface FileRouteTypes {
     | '/auth'
     | '/categories'
     | '/chat'
+    | '/chat-settings'
     | '/explore'
     | '/favorites'
     | '/history'
     | '/home'
     | '/languages'
     | '/library'
+    | '/messages'
     | '/profile'
     | '/search'
     | '/settings'
@@ -217,12 +237,14 @@ export interface FileRouteTypes {
     | '/auth'
     | '/categories'
     | '/chat'
+    | '/chat-settings'
     | '/explore'
     | '/favorites'
     | '/history'
     | '/home'
     | '/languages'
     | '/library'
+    | '/messages'
     | '/profile'
     | '/search'
     | '/settings'
@@ -238,12 +260,14 @@ export interface FileRouteTypes {
     | '/auth'
     | '/categories'
     | '/chat'
+    | '/chat-settings'
     | '/explore'
     | '/favorites'
     | '/history'
     | '/home'
     | '/languages'
     | '/library'
+    | '/messages'
     | '/profile'
     | '/search'
     | '/settings'
@@ -260,12 +284,14 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CategoriesRoute: typeof CategoriesRoute
   ChatRoute: typeof ChatRoute
+  ChatSettingsRoute: typeof ChatSettingsRoute
   ExploreRoute: typeof ExploreRoute
   FavoritesRoute: typeof FavoritesRoute
   HistoryRoute: typeof HistoryRoute
   HomeRoute: typeof HomeRoute
   LanguagesRoute: typeof LanguagesRoute
   LibraryRoute: typeof LibraryRoute
+  MessagesRoute: typeof MessagesRoute
   ProfileRoute: typeof ProfileRoute
   SearchRoute: typeof SearchRoute
   SettingsRoute: typeof SettingsRoute
@@ -305,6 +331,13 @@ declare module '@tanstack/react-router' {
       path: '/chat'
       fullPath: '/chat'
       preLoaderRoute: typeof ChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chat-settings': {
+      id: '/chat-settings'
+      path: '/chat-settings'
+      fullPath: '/chat-settings'
+      preLoaderRoute: typeof ChatSettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/explore': {
@@ -347,6 +380,13 @@ declare module '@tanstack/react-router' {
       path: '/library'
       fullPath: '/library'
       preLoaderRoute: typeof LibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/messages': {
+      id: '/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof MessagesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -420,12 +460,14 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CategoriesRoute: CategoriesRoute,
   ChatRoute: ChatRoute,
+  ChatSettingsRoute: ChatSettingsRoute,
   ExploreRoute: ExploreRoute,
   FavoritesRoute: FavoritesRoute,
   HistoryRoute: HistoryRoute,
   HomeRoute: HomeRoute,
   LanguagesRoute: LanguagesRoute,
   LibraryRoute: LibraryRoute,
+  MessagesRoute: MessagesRoute,
   ProfileRoute: ProfileRoute,
   SearchRoute: SearchRoute,
   SettingsRoute: SettingsRoute,
