@@ -10,7 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CategoriesRouteImport } from './routes/categories'
+import { Route as ChatRouteImport } from './routes/chat'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as HistoryRouteImport } from './routes/history'
@@ -32,9 +34,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CategoriesRoute = CategoriesRouteImport.update({
   id: '/categories',
   path: '/categories',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatRoute = ChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExploreRoute = ExploreRouteImport.update({
@@ -115,7 +127,9 @@ const ReadBookIdRoute = ReadBookIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/categories': typeof CategoriesRoute
+  '/chat': typeof ChatRoute
   '/explore': typeof ExploreRoute
   '/favorites': typeof FavoritesRoute
   '/history': typeof HistoryRoute
@@ -134,7 +148,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/categories': typeof CategoriesRoute
+  '/chat': typeof ChatRoute
   '/explore': typeof ExploreRoute
   '/favorites': typeof FavoritesRoute
   '/history': typeof HistoryRoute
@@ -154,7 +170,9 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/categories': typeof CategoriesRoute
+  '/chat': typeof ChatRoute
   '/explore': typeof ExploreRoute
   '/favorites': typeof FavoritesRoute
   '/history': typeof HistoryRoute
@@ -175,7 +193,9 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
     | '/categories'
+    | '/chat'
     | '/explore'
     | '/favorites'
     | '/history'
@@ -194,7 +214,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
     | '/categories'
+    | '/chat'
     | '/explore'
     | '/favorites'
     | '/history'
@@ -213,7 +235,9 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/auth'
     | '/categories'
+    | '/chat'
     | '/explore'
     | '/favorites'
     | '/history'
@@ -233,7 +257,9 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
   CategoriesRoute: typeof CategoriesRoute
+  ChatRoute: typeof ChatRoute
   ExploreRoute: typeof ExploreRoute
   FavoritesRoute: typeof FavoritesRoute
   HistoryRoute: typeof HistoryRoute
@@ -260,11 +286,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/categories': {
       id: '/categories'
       path: '/categories'
       fullPath: '/categories'
       preLoaderRoute: typeof CategoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chat': {
+      id: '/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof ChatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/explore': {
@@ -377,7 +417,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
   CategoriesRoute: CategoriesRoute,
+  ChatRoute: ChatRoute,
   ExploreRoute: ExploreRoute,
   FavoritesRoute: FavoritesRoute,
   HistoryRoute: HistoryRoute,
