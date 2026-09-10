@@ -1,125 +1,75 @@
 /**
  * Local-only messaging store for Reading Corner's private chat area.
- * Accounts, friends and messages live in localStorage — no server involved.
+ * Accounts, profile photos and messages live in localStorage — no server involved.
  * Passwords are stored as a salted digest so plaintext never hits storage,
  * but this is a demo-grade flow, not production authentication.
  */
 import { useSyncExternalStore } from "react";
 
-export type Account = { username: string; digest: string; createdAt: string };
+export type Account = {
+  id: string;
+  username: string;
+  digest: string;
+  dp?: string;
+  bio?: string;
+  createdAt: string;
+  demo?: boolean;
+  online?: boolean;
+  lastActive?: string;
+};
+
+export type MediaKind = "image" | "video" | "audio";
 
 export type Message = {
   id: string;
-  friendId: string;
-  from: "me" | "them";
+  thread: string;
+  from: string; // account id
+  to: string; // account id
   text: string;
-  image?: string;
+  media?: string;
+  mediaKind?: MediaKind;
   at: string;
-};
-
-export type Friend = {
-  id: string;
-  name: string;
-  handle: string;
-  avatar: string;
-  online: boolean;
-  lastActive: string;
+  seen: boolean;
 };
 
 type ChatState = {
   ready: boolean;
   accounts: Account[];
-  session: string | null;
+  session: string | null; // account id
   messages: Message[];
-  unread: Record<string, number>;
 };
 
-const KEY = "reading-corner.chat.v1";
+const KEY = "reading-corner.chat.v2";
 
-export const FRIENDS: Friend[] = [
-  {
-    id: "amelia",
-    name: "Amelia Rose",
-    handle: "@amelia",
-    avatar: "AR",
-    online: true,
-    lastActive: "Active now",
-  },
-  {
-    id: "noah",
-    name: "Noah Feldman",
-    handle: "@noahf",
-    avatar: "NF",
-    online: true,
-    lastActive: "Active now",
-  },
-  {
-    id: "meera",
-    name: "Meera Nair",
-    handle: "@meera",
-    avatar: "MN",
-    online: false,
-    lastActive: "Active 12m ago",
-  },
-  {
-    id: "kabir",
-    name: "Kabir Shah",
-    handle: "@kabir",
-    avatar: "KS",
-    online: false,
-    lastActive: "Active 2h ago",
-  },
-  {
-    id: "lina",
-    name: "Lina Haddad",
-    handle: "@lina",
-    avatar: "LH",
-    online: true,
-    lastActive: "Active now",
-  },
-  {
-    id: "arjun",
-    name: "Arjun Menon",
-    handle: "@arjun",
-    avatar: "AM",
-    online: false,
-    lastActive: "Active yesterday",
-  },
-];
-
-function seedMessages(): Message[] {
-  const now = Date.now();
-  const m = (
-    friendId: string,
-    from: "me" | "them",
-    text: string,
-    minutesAgo: number,
-  ): Message => ({
-    id: `${friendId}-${minutesAgo}-${from}`,
-    friendId,
-    from,
-    text,
-    at: new Date(now - minutesAgo * 60_000).toISOString(),
-  });
-  return [
-    m("amelia", "them", "Did you finish Jane Eyre yet? 👀", 240),
-    m("amelia", "me", "Two chapters left. It's so good.", 236),
-    m("amelia", "them", "Tell me the moment you're done!", 8),
-    m("noah", "me", "Sending you the Gatsby quote I loved.", 180),
-    m("noah", "them", "Please do — I'm starting it tonight.", 42),
-    m("meera", "them", "Thirukkural readalong this weekend?", 700),
-    m("kabir", "me", "Added Animal Farm to my library.", 1500),
-    m("lina", "them", "Gitanjali hits differently at night 🌙", 90),
-  ];
+function demo(
+  id: string,
+  username: string,
+  bio: string,
+  online: boolean,
+  lastActive: string,
+): Account {
+  return {
+    id,
+    username,
+    digest: "",
+    bio,
+    createdAt: new Date(0).toISOString(),
+    demo: true,
+    online,
+    lastActive,
+  };
 }
 
-const EMPTY: ChatState = {
-  ready: false,
-  accounts: [],
-  session: null,
-  messages: [],
-  unread: {},
-};
+export const DEMO_ACCOUNTS: Account[] = [
+  demo("amelia", "amelia.rose", "Currently in Jane Eyre 📖", true, "Active now"),
+  demo("noah", "noah.feldman", "Gatsby re-reader", true, "Active now"),
+  demo("meera", "meera.nair", "Thirukkural readalongs", false, "Active 12m ago"),
+  demo("kabir", "kabir.shah", "Dystopia and dosa", false, "Active 2h ago"),
+  demo("lina", "lina.haddad", "Poetry at midnight 🌙", true, "Active now"),
+  demo("arjun", "arjun.menon", "Sci-fi, always", false, "Active yesterday"),
+];
+
+const EMPTY: ChatState = { ready: false, accounts: [], session: null, messages: [] };
 
 let state: ChatState = EMPTY;
 const listeners = new Set<() => void>();
@@ -128,19 +78,22 @@ function emit() {
   listeners.forEach((l) => l());
 }
 
+export function threadKey(a: string, b: string) {
+  return [a, b].sort().join("::");
+}
+
 function persist() {
   try {
     localStorage.setItem(
       KEY,
       JSON.stringify({
-        accounts: state.accounts,
+        accounts: state.accounts.filter((a) => !a.demo),
         session: state.session,
-        messages: state.messages,
-        unread: state.unread,
+        messages: state.messages.slice(-400),
       }),
     );
   } catch {
-    /* storage blocked */
+    /* storage blocked or full */
   }
 }
 
@@ -150,27 +103,45 @@ function set(patch: Partial<ChatState>) {
   emit();
 }
 
+function seedMessages(meId: string): Message[] {
+  const now = Date.now();
+  const m = (peer: string, mine: boolean, text: string, minutesAgo: number): Message => ({
+    id: `${peer}-${minutesAgo}-${mine ? "me" : "them"}`,
+    thread: threadKey(meId, peer),
+    from: mine ? meId : peer,
+    to: mine ? peer : meId,
+    text,
+    at: new Date(now - minutesAgo * 60_000).toISOString(),
+    seen: true,
+  });
+  return [
+    m("amelia", false, "Did you finish Jane Eyre yet? 👀", 240),
+    m("amelia", true, "Two chapters left. It's so good.", 236),
+    m("amelia", false, "Tell me the moment you're done!", 8),
+    m("noah", true, "Sending you the Gatsby quote I loved.", 180),
+    m("noah", false, "Please do — I'm starting it tonight.", 42),
+    m("lina", false, "Gitanjali hits differently at night 🌙", 90),
+  ];
+}
+
 let hydrated = false;
 function hydrate() {
   if (hydrated || typeof window === "undefined") return;
   hydrated = true;
-  let next: ChatState = { ...EMPTY, ready: true, messages: seedMessages() };
+  let stored: Partial<ChatState> = {};
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw) as Partial<ChatState>;
-      next = {
-        ready: true,
-        accounts: parsed.accounts ?? [],
-        session: parsed.session ?? null,
-        messages: parsed.messages?.length ? parsed.messages : seedMessages(),
-        unread: parsed.unread ?? {},
-      };
-    }
+    if (raw) stored = JSON.parse(raw) as Partial<ChatState>;
   } catch {
     /* ignore corrupt storage */
   }
-  state = next;
+  const mine = stored.accounts ?? [];
+  state = {
+    ready: true,
+    accounts: [...mine, ...DEMO_ACCOUNTS],
+    session: stored.session ?? null,
+    messages: stored.messages ?? [],
+  };
   emit();
 }
 
@@ -195,28 +166,33 @@ export function digestPassword(username: string, password: string) {
   return `${h1.toString(36)}${h2.toString(36)}`;
 }
 
-export function createAccount(username: string, password: string) {
+export function createAccount(username: string, password: string, dp?: string) {
   const name = username.trim();
   if (state.accounts.some((a) => a.username.toLowerCase() === name.toLowerCase())) {
     return { ok: false as const, error: "That username is already taken." };
   }
   const account: Account = {
+    id: `u-${Date.now().toString(36)}`,
     username: name,
     digest: digestPassword(name, password),
     createdAt: new Date().toISOString(),
+    online: true,
+    ...(dp ? { dp } : {}),
   };
-  set({ accounts: [...state.accounts, account], session: name });
+  const withSeed = state.messages.length ? state.messages : seedMessages(account.id);
+  set({ accounts: [...state.accounts, account], session: account.id, messages: withSeed });
   return { ok: true as const };
 }
 
 export function signIn(username: string, password: string) {
-  const name = username.trim();
-  const account = state.accounts.find((a) => a.username.toLowerCase() === name.toLowerCase());
+  const name = username.trim().toLowerCase();
+  const account = state.accounts.find((a) => !a.demo && a.username.toLowerCase() === name);
   if (!account) return { ok: false as const, error: "No account found with that username." };
   if (account.digest !== digestPassword(account.username, password)) {
     return { ok: false as const, error: "Incorrect password. Please try again." };
   }
-  set({ session: account.username });
+  const withSeed = state.messages.length ? state.messages : seedMessages(account.id);
+  set({ session: account.id, messages: withSeed });
   return { ok: true as const };
 }
 
@@ -224,74 +200,98 @@ export function signOut() {
   set({ session: null });
 }
 
-export function resetPassword(username: string, password: string) {
-  const name = username.trim();
-  const account = state.accounts.find((a) => a.username.toLowerCase() === name.toLowerCase());
-  if (!account) return { ok: false as const, error: "No account found with that username." };
+export function updateProfile(patch: { username?: string; dp?: string; bio?: string }) {
+  const id = state.session;
+  if (!id) return { ok: false as const, error: "You are not signed in." };
+  if (patch.username) {
+    const name = patch.username.trim();
+    if (
+      state.accounts.some(
+        (a) => a.id !== id && a.username.toLowerCase() === name.toLowerCase(),
+      )
+    ) {
+      return { ok: false as const, error: "That username is already taken." };
+    }
+  }
   set({
-    accounts: state.accounts.map((a) =>
-      a.username === account.username
-        ? { ...a, digest: digestPassword(account.username, password) }
-        : a,
-    ),
+    accounts: state.accounts.map((a) => (a.id === id ? { ...a, ...patch } : a)),
   });
   return { ok: true as const };
 }
 
-export function sendMessage(friendId: string, text: string, image?: string) {
+export function sendMessage(
+  peerId: string,
+  text: string,
+  media?: { data: string; kind: MediaKind },
+) {
+  const me = state.session;
+  if (!me) return null;
   const msg: Message = {
-    id: `${friendId}-${Date.now()}-me`,
-    friendId,
-    from: "me",
+    id: `${peerId}-${Date.now()}-me`,
+    thread: threadKey(me, peerId),
+    from: me,
+    to: peerId,
     text,
     at: new Date().toISOString(),
-    ...(image ? { image } : {}),
+    seen: false,
+    ...(media ? { media: media.data, mediaKind: media.kind } : {}),
   };
   set({ messages: [...state.messages, msg] });
   return msg;
 }
 
-export function receiveMessage(friendId: string, text: string, markUnread: boolean) {
+export function receiveMessage(peerId: string, text: string) {
+  const me = state.session;
+  if (!me) return null;
   const msg: Message = {
-    id: `${friendId}-${Date.now()}-them`,
-    friendId,
-    from: "them",
+    id: `${peerId}-${Date.now()}-them`,
+    thread: threadKey(me, peerId),
+    from: peerId,
+    to: me,
     text,
     at: new Date().toISOString(),
+    seen: true,
   };
-  set({
-    messages: [...state.messages, msg],
-    unread: markUnread
-      ? { ...state.unread, [friendId]: (state.unread[friendId] ?? 0) + 1 }
-      : state.unread,
-  });
+  set({ messages: [...state.messages, msg] });
   return msg;
 }
 
-export function clearUnread(friendId: string) {
-  if (!state.unread[friendId]) return;
-  const next = { ...state.unread };
-  delete next[friendId];
-  set({ unread: next });
+/** Mark my outgoing messages in a thread as seen by the other person. */
+export function markSeen(peerId: string) {
+  const me = state.session;
+  if (!me) return;
+  const key = threadKey(me, peerId);
+  if (!state.messages.some((m) => m.thread === key && m.from === me && !m.seen)) return;
+  set({
+    messages: state.messages.map((m) =>
+      m.thread === key && m.from === me ? { ...m, seen: true } : m,
+    ),
+  });
 }
 
 export function useChat() {
-  return useSyncExternalStore(
+  const snapshot = useSyncExternalStore(
     subscribe,
     () => state,
     () => EMPTY,
   );
+  const me = snapshot.accounts.find((a) => a.id === snapshot.session) ?? null;
+  return { ...snapshot, me };
 }
 
-export function conversationFor(messages: Message[], friendId: string) {
-  return messages
-    .filter((m) => m.friendId === friendId)
-    .sort((a, b) => a.at.localeCompare(b.at));
+export function conversationFor(messages: Message[], meId: string, peerId: string) {
+  const key = threadKey(meId, peerId);
+  return messages.filter((m) => m.thread === key).sort((a, b) => a.at.localeCompare(b.at));
 }
 
-export function lastMessageFor(messages: Message[], friendId: string) {
-  const list = conversationFor(messages, friendId);
+export function lastMessageFor(messages: Message[], meId: string, peerId: string) {
+  const list = conversationFor(messages, meId, peerId);
   return list[list.length - 1];
+}
+
+export function unreadCount(messages: Message[], meId: string, peerId: string) {
+  const key = threadKey(meId, peerId);
+  return messages.filter((m) => m.thread === key && m.to === meId && !m.seen).length;
 }
 
 export function formatTime(iso: string) {
@@ -307,6 +307,11 @@ export function formatRelative(iso: string) {
   const hrs = Math.round(mins / 60);
   if (hrs < 24) return `${hrs}h`;
   return `${Math.round(hrs / 24)}d`;
+}
+
+export function initialsOf(username: string) {
+  const parts = username.replace(/[._-]+/g, " ").trim().split(/\s+/);
+  return (parts[0]?.[0] ?? "?").concat(parts[1]?.[0] ?? "").toUpperCase();
 }
 
 export const AUTO_REPLIES = [
