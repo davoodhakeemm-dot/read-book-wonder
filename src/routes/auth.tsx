@@ -25,7 +25,7 @@ export const Route = createFileRoute("/auth")({
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: AuthPage;
+  component: AuthPage,
 });
 
 type Mode = "login" | "create" | "forgot";
