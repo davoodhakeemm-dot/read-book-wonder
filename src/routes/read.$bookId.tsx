@@ -19,7 +19,7 @@ import { progressPercent, useLibrary } from "@/lib/library-store";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/read/$bookId")({
-  validateSearch: (search: Record<string, unknown>): { page?: number } => ({
+  validateSearch: (search: Record<string, unknown>): { page?: number | undefined } => ({
     page: search['page'] === undefined ? undefined : Number(search['page']),
   }),
   head: () => ({
