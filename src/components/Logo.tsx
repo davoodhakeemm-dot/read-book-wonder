@@ -1,31 +1,39 @@
-
-import { cn } from "@/lib/utils";
 import { useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { cn } from "@/lib/utils";
 
 export function Logo({ className }: { className?: string }) {
   const navigate = useNavigate();
-  const timerRef = useRef<number | null>(null);
 
-  const startHold = (e: React.PointerEvent<SVGSVGElement>) => {
+  const tapCountRef = useRef(0);
+  const resetTimerRef = useRef<number | null>(null);
+
+  const handleTap = (e: React.PointerEvent<SVGSVGElement>) => {
     e.preventDefault();
 
-    if (timerRef.current !== null) {
-      window.clearTimeout(timerRef.current);
+    // Count the tap
+    tapCountRef.current += 1;
+
+    // Reset the counter after 2 seconds
+    if (resetTimerRef.current !== null) {
+      window.clearTimeout(resetTimerRef.current);
     }
 
-    timerRef.current = window.setTimeout(() => {
+    resetTimerRef.current = window.setTimeout(() => {
+      tapCountRef.current = 0;
+      resetTimerRef.current = null;
+    }, 2000);
+
+    // 3 taps = open secret page
+    if (tapCountRef.current === 3) {
+      tapCountRef.current = 0;
+
+      if (resetTimerRef.current !== null) {
+        window.clearTimeout(resetTimerRef.current);
+        resetTimerRef.current = null;
+      }
+
       navigate({ to: "/chat" });
-      timerRef.current = null;
-    }, 7000);
-  };
-
-  const cancelHold = (e: React.PointerEvent<SVGSVGElement>) => {
-    e.preventDefault();
-
-    if (timerRef.current !== null) {
-      window.clearTimeout(timerRef.current);
-      timerRef.current = null;
     }
   };
 
@@ -36,10 +44,7 @@ export function Logo({ className }: { className?: string }) {
       className={cn("shrink-0 select-none", className)}
       aria-hidden="true"
       draggable="false"
-      onPointerDown={startHold}
-      onPointerUp={cancelHold}
-      onPointerCancel={cancelHold}
-      onPointerLeave={cancelHold}
+      onPointerUp={handleTap}
       onContextMenu={(e) => e.preventDefault()}
       onDragStart={(e) => e.preventDefault()}
       style={{
@@ -47,7 +52,7 @@ export function Logo({ className }: { className?: string }) {
         WebkitUserSelect: "none",
         WebkitTouchCallout: "none",
         WebkitUserDrag: "none",
-        touchAction: "none",
+        touchAction: "manipulation",
         WebkitTapHighlightColor: "transparent",
       }}
     >
