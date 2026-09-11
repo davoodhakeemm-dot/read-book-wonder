@@ -32,7 +32,7 @@ export function SecretGesture() {
 
     function onDown(e: PointerEvent) {
       const target = e.target as HTMLElement | null;
-      if (target?.closest("input, textarea, select, [contenteditable='true']")) return;
+      if (!target?.closest("[data-secret-logo]")) return;
       clear();
       start.current = { x: e.clientX, y: e.clientY };
       const began = Date.now();
