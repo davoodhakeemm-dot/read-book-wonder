@@ -11,7 +11,7 @@ import {
   Settings,
   User,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/utils";
