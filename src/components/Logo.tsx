@@ -1,4 +1,4 @@
->
+import { cn } from "@/lib/utils";
       <defs>
         <linearGradient id="rc-a" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="oklch(0.55 0.2 293)" />
