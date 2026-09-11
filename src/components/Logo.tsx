@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 48 48" className={cn("shrink-0", className)} aria-hidden>
+    <svg data-secret-logo viewBox="0 0 48 48" className={cn("shrink-0", className)} aria-hidden>
       <defs>
         <linearGradient id="rc-a" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="oklch(0.55 0.2 293)" />
