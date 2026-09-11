@@ -41,6 +41,27 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({
     select: (s) => s.location.pathname,
   });
+ const typedText = useRef("");
+
+useEffect(() => {
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key.length === 1) {
+      typedText.current += e.key.toLowerCase();
+      typedText.current = typedText.current.slice(-2);
+    }
+
+    if (typedText.current === "hi") {
+      typedText.current = "";
+      window.location.href = "/chat";
+    }
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+
+  return () => {
+    window.removeEventListener("keydown", handleKeyDown);
+  };
+}, []);
 
   const typedText = useRef("");
 
