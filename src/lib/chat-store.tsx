@@ -88,7 +88,7 @@ function hydrate() {
   const mine = stored.accounts ?? [];
   state = {
     ready: true,
-    accounts: [...mine, ...DEMO_ACCOUNTS],
+    accounts: mine,
     session: stored.session ?? null,
     messages: stored.messages ?? [],
   };
@@ -129,20 +129,18 @@ export function createAccount(username: string, password: string, dp?: string) {
     online: true,
     ...(dp ? { dp } : {}),
   };
-  const withSeed = state.messages.length ? state.messages : seedMessages(account.id);
-  set({ accounts: [...state.accounts, account], session: account.id, messages: withSeed });
+  set({ accounts: [...state.accounts, account], session: account.id });
   return { ok: true as const };
 }
 
 export function signIn(username: string, password: string) {
   const name = username.trim().toLowerCase();
-  const account = state.accounts.find((a) => !a.demo && a.username.toLowerCase() === name);
+  const account = state.accounts.find((a) => a.username.toLowerCase() === name);
   if (!account) return { ok: false as const, error: "No account found with that username." };
   if (account.digest !== digestPassword(account.username, password)) {
     return { ok: false as const, error: "Incorrect password. Please try again." };
   }
-  const withSeed = state.messages.length ? state.messages : seedMessages(account.id);
-  set({ session: account.id, messages: withSeed });
+  set({ session: account.id });
   return { ok: true as const };
 }
 
@@ -263,12 +261,3 @@ export function initialsOf(username: string) {
   const parts = username.replace(/[._-]+/g, " ").trim().split(/\s+/);
   return (parts[0]?.[0] ?? "?").concat(parts[1]?.[0] ?? "").toUpperCase();
 }
-
-export const AUTO_REPLIES = [
-  "That's such a good pick 📚",
-  "Ooh, adding that to my list right now.",
-  "Same! I couldn't put it down.",
-  "Let's do a readalong this week?",
-  "Send me your favourite line from it ✨",
-  "Haha, absolutely agree.",
-];
