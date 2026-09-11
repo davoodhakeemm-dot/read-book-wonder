@@ -13,7 +13,6 @@ export type Account = {
   dp?: string;
   bio?: string;
   createdAt: string;
-  demo?: boolean;
   online?: boolean;
   lastActive?: string;
 };
@@ -41,34 +40,6 @@ type ChatState = {
 
 const KEY = "reading-corner.chat.v2";
 
-function demo(
-  id: string,
-  username: string,
-  bio: string,
-  online: boolean,
-  lastActive: string,
-): Account {
-  return {
-    id,
-    username,
-    digest: "",
-    bio,
-    createdAt: new Date(0).toISOString(),
-    demo: true,
-    online,
-    lastActive,
-  };
-}
-
-export const DEMO_ACCOUNTS: Account[] = [
-  demo("amelia", "amelia.rose", "Currently in Jane Eyre 📖", true, "Active now"),
-  demo("noah", "noah.feldman", "Gatsby re-reader", true, "Active now"),
-  demo("meera", "meera.nair", "Thirukkural readalongs", false, "Active 12m ago"),
-  demo("kabir", "kabir.shah", "Dystopia and dosa", false, "Active 2h ago"),
-  demo("lina", "lina.haddad", "Poetry at midnight 🌙", true, "Active now"),
-  demo("arjun", "arjun.menon", "Sci-fi, always", false, "Active yesterday"),
-];
-
 const EMPTY: ChatState = { ready: false, accounts: [], session: null, messages: [] };
 
 let state: ChatState = EMPTY;
@@ -87,7 +58,7 @@ function persist() {
     localStorage.setItem(
       KEY,
       JSON.stringify({
-        accounts: state.accounts.filter((a) => !a.demo),
+        accounts: state.accounts,
         session: state.session,
         messages: state.messages.slice(-400),
       }),
@@ -101,27 +72,6 @@ function set(patch: Partial<ChatState>) {
   state = { ...state, ...patch };
   if (state.ready) persist();
   emit();
-}
-
-function seedMessages(meId: string): Message[] {
-  const now = Date.now();
-  const m = (peer: string, mine: boolean, text: string, minutesAgo: number): Message => ({
-    id: `${peer}-${minutesAgo}-${mine ? "me" : "them"}`,
-    thread: threadKey(meId, peer),
-    from: mine ? meId : peer,
-    to: mine ? peer : meId,
-    text,
-    at: new Date(now - minutesAgo * 60_000).toISOString(),
-    seen: true,
-  });
-  return [
-    m("amelia", false, "Did you finish Jane Eyre yet? 👀", 240),
-    m("amelia", true, "Two chapters left. It's so good.", 236),
-    m("amelia", false, "Tell me the moment you're done!", 8),
-    m("noah", true, "Sending you the Gatsby quote I loved.", 180),
-    m("noah", false, "Please do — I'm starting it tonight.", 42),
-    m("lina", false, "Gitanjali hits differently at night 🌙", 90),
-  ];
 }
 
 let hydrated = false;
