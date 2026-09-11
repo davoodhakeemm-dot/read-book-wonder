@@ -188,22 +188,6 @@ export function sendMessage(
   return msg;
 }
 
-export function receiveMessage(peerId: string, text: string) {
-  const me = state.session;
-  if (!me) return null;
-  const msg: Message = {
-    id: `${peerId}-${Date.now()}-them`,
-    thread: threadKey(me, peerId),
-    from: peerId,
-    to: me,
-    text,
-    at: new Date().toISOString(),
-    seen: true,
-  };
-  set({ messages: [...state.messages, msg] });
-  return msg;
-}
-
 /** Mark my outgoing messages in a thread as seen by the other person. */
 export function markSeen(peerId: string) {
   const me = state.session;

@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeft,
-  Bell,
   Check,
   CheckCheck,
   ImagePlus,
@@ -18,7 +17,6 @@ import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
 import {
-  AUTO_REPLIES,
   type MediaKind,
   conversationFor,
   formatRelative,
@@ -26,7 +24,6 @@ import {
   initialsOf,
   lastMessageFor,
   markSeen,
-  receiveMessage,
   sendMessage,
   unreadCount,
   useChat,
@@ -150,15 +147,6 @@ function ChatPage() {
     setDraft("");
     setAttachment(null);
     setEmoji(false);
-
-    const target = peer;
-    setTyping(target.id);
-    window.setTimeout(() => {
-      setTyping(null);
-      const reply = AUTO_REPLIES[Math.floor(Math.random() * AUTO_REPLIES.length)]!;
-      receiveMessage(target.id, reply);
-      toast(target.username, { description: reply, icon: <Bell className="size-4" /> });
-    }, 1800);
   }
 
   function pickFile(e: React.ChangeEvent<HTMLInputElement>) {
