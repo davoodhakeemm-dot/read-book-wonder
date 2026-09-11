@@ -2,7 +2,7 @@ import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
 const HOLD_MS = 7000;
-const HIDDEN_PREFIXES = ["/auth", "/chat", "/messages"];
+const HIDDEN_PREFIXES = ["/auth", "/chat", "/messages", "/chat-settings"];
 
 /**
  * Hold anywhere on the reading app for 7 seconds to open the private
