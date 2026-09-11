@@ -1,4 +1,5 @@
- import { Link, useRouterState } from "@tanstack/react-router";
+
+import { Link, useRouterState } from "@tanstack/react-router";
 import {
   BookOpen,
   Compass,
@@ -13,7 +14,6 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, type ReactNode } from "react";
 
-import { AppShell } from "@/components/AppShell";
 import { Logo } from "@/components/Logo";
 import { cn } from "@/lib/utils";
 
@@ -41,47 +41,15 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({
     select: (s) => s.location.pathname,
   });
- const typedText = useRef("");
-
-useEffect(() => {
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key.length === 1) {
-      typedText.current += e.key.toLowerCase();
-      typedText.current = typedText.current.slice(-2);
-    }
-
-    if (typedText.current === "hi") {
-      typedText.current = "";
-      window.location.href = "/chat";
-    }
-  };
-
-  window.addEventListener("keydown", handleKeyDown);
-
-  return () => {
-    window.removeEventListener("keydown", handleKeyDown);
-  };
-}, []);
 
   const typedText = useRef("");
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement | null;
-
-      if (
-        target?.tagName === "INPUT" ||
-        target?.tagName === "TEXTAREA" ||
-        target?.isContentEditable
-      ) {
-        return;
-      }
-
       if (e.key.length === 1) {
         typedText.current += e.key.toLowerCase();
+        typedText.current = typedText.current.slice(-2);
       }
-
-      typedText.current = typedText.current.slice(-2);
 
       if (typedText.current === "hi") {
         typedText.current = "";
@@ -242,4 +210,4 @@ export function PageHeader({
       {action}
     </div>
   );
-}     
+}
