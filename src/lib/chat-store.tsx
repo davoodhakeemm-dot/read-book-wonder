@@ -86,11 +86,12 @@ function hydrate() {
     /* ignore corrupt storage */
   }
   const mine = stored.accounts ?? [];
+  const ids = new Set(mine.map((a) => a.id));
   state = {
     ready: true,
     accounts: mine,
     session: stored.session ?? null,
-    messages: stored.messages ?? [],
+    messages: (stored.messages ?? []).filter((m) => ids.has(m.from) && ids.has(m.to)),
   };
   emit();
 }
