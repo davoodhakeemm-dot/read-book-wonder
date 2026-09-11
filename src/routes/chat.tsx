@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeft,
-  Bell,
   Check,
   CheckCheck,
   ImagePlus,
@@ -18,7 +17,6 @@ import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
 import {
-  AUTO_REPLIES,
   type MediaKind,
   conversationFor,
   formatRelative,
@@ -26,7 +24,6 @@ import {
   initialsOf,
   lastMessageFor,
   markSeen,
-  receiveMessage,
   sendMessage,
   unreadCount,
   useChat,
@@ -101,7 +98,7 @@ function ChatPage() {
   const [draft, setDraft] = useState("");
   const [attachment, setAttachment] = useState<{ data: string; kind: MediaKind } | null>(null);
   const [emoji, setEmoji] = useState(false);
-  const [typing, setTyping] = useState<string | null>(null);
+  
   const [recording, setRecording] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
@@ -132,7 +129,7 @@ function ChatPage() {
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: "end" });
-  }, [thread.length, typing]);
+  }, [thread.length]);
 
   function handleSend(e: React.FormEvent) {
     e.preventDefault();
@@ -150,15 +147,6 @@ function ChatPage() {
     setDraft("");
     setAttachment(null);
     setEmoji(false);
-
-    const target = peer;
-    setTyping(target.id);
-    window.setTimeout(() => {
-      setTyping(null);
-      const reply = AUTO_REPLIES[Math.floor(Math.random() * AUTO_REPLIES.length)]!;
-      receiveMessage(target.id, reply);
-      toast(target.username, { description: reply, icon: <Bell className="size-4" /> });
-    }, 1800);
   }
 
   function pickFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -313,11 +301,7 @@ function ChatPage() {
                 <div className="min-w-0">
                   <p className="truncate text-sm font-bold">{peer.username}</p>
                   <p className="text-xs text-muted-foreground">
-                    {typing === peer.id
-                      ? "typing…"
-                      : peer.online
-                        ? "Online"
-                        : peer.lastActive ?? "Offline"}
+                    {peer.online ? "Online" : (peer.lastActive ?? "Offline")}
                   </p>
                 </div>
               </header>
@@ -371,19 +355,6 @@ function ChatPage() {
                     </div>
                   );
                 })}
-                {typing === peer.id && (
-                  <div className="flex justify-start">
-                    <div className="flex items-center gap-1 rounded-3xl rounded-bl-lg bg-secondary px-4 py-3">
-                      {[0, 1, 2].map((i) => (
-                        <span
-                          key={i}
-                          className="size-1.5 animate-bounce rounded-full bg-muted-foreground/70"
-                          style={{ animationDelay: `${i * 0.15}s` }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
                 <div ref={endRef} />
               </div>
 
