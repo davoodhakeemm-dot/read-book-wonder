@@ -1,61 +1,4 @@
-import { useRef } from "react";
-import { useNavigate } from "@tanstack/react-router";
-import { cn } from "@/lib/utils";
-
-export function Logo({ className }: { className?: string }) {
-  const navigate = useNavigate();
-
-  const tapCountRef = useRef(0);
-  const resetTimerRef = useRef<number | null>(null);
-
-  const handleTap = (e: React.PointerEvent<SVGSVGElement>) => {
-    e.preventDefault();
-
-    // Count the tap
-    tapCountRef.current += 1;
-
-    // Reset the counter after 2 seconds
-    if (resetTimerRef.current !== null) {
-      window.clearTimeout(resetTimerRef.current);
-    }
-
-    resetTimerRef.current = window.setTimeout(() => {
-      tapCountRef.current = 0;
-      resetTimerRef.current = null;
-    }, 2000);
-
-    // 3 taps = open secret page
-    if (tapCountRef.current === 3) {
-      tapCountRef.current = 0;
-
-      if (resetTimerRef.current !== null) {
-        window.clearTimeout(resetTimerRef.current);
-        resetTimerRef.current = null;
-      }
-
-      navigate({ to: "/chat" });
-    }
-  };
-
-  return (
-    <svg
-      data-secret-logo
-      viewBox="0 0 48 48"
-      className={cn("shrink-0 select-none", className)}
-      aria-hidden="true"
-      draggable="false"
-      onPointerUp={handleTap}
-      onContextMenu={(e) => e.preventDefault()}
-      onDragStart={(e) => e.preventDefault()}
-      style={{
-        userSelect: "none",
-        WebkitUserSelect: "none",
-        WebkitTouchCallout: "none",
-        WebkitUserDrag: "none",
-        touchAction: "manipulation",
-        WebkitTapHighlightColor: "transparent",
-      }}
-    >
+>
       <defs>
         <linearGradient id="rc-a" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="oklch(0.55 0.2 293)" />
@@ -87,3 +30,5 @@ export function Logo({ className }: { className?: string }) {
     </svg>
   );
 }
+
+    
