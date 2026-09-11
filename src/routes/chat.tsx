@@ -3,11 +3,14 @@ import {
   ArrowLeft,
   Bell,
   Check,
+  CheckCheck,
   ImagePlus,
-  LogOut,
+  Mic,
   Search,
   Send,
+  Settings,
   Smile,
+  Square,
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -16,31 +19,32 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
   AUTO_REPLIES,
-  FRIENDS,
-  clearUnread,
+  type MediaKind,
   conversationFor,
   formatRelative,
   formatTime,
+  initialsOf,
   lastMessageFor,
+  markSeen,
   receiveMessage,
   sendMessage,
-  signOut,
+  unreadCount,
   useChat,
 } from "@/lib/chat-store";
 
 export const Route = createFileRoute("/chat")({
   head: () => ({
     meta: [
-      { title: "Messages — Reading Corner" },
+      { title: "Private chats — Reading Corner" },
       {
         name: "description",
         content:
-          "Chat live with your reading friends: online status, typing indicators, photos and instant message bubbles.",
+          "Chat live with every account: online status, typing and seen signals, photos, videos and voice notes.",
       },
-      { property: "og:title", content: "Messages — Reading Corner" },
+      { property: "og:title", content: "Private chats — Reading Corner" },
       {
         property: "og:description",
-        content: "Live chat with your reading friends inside Reading Corner.",
+        content: "Live private chats with photos, videos and voice notes.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -53,23 +57,29 @@ export const Route = createFileRoute("/chat")({
 const EMOJIS = ["😀", "😂", "🥰", "😍", "🤔", "👍", "🙌", "🔥", "✨", "📚", "☕", "🌙", "❤️", "🎉", "😭", "👀"];
 
 function Avatar({
-  initials,
+  name,
+  dp,
   online,
   size = "md",
 }: {
-  initials: string;
-  online?: boolean;
+  name: string;
+  dp?: string | undefined;
+  online?: boolean | undefined;
   size?: "md" | "lg";
 }) {
   return (
     <span className="relative inline-flex shrink-0">
       <span
         className={cn(
-          "grid place-items-center rounded-full bg-brand font-display font-bold text-primary-foreground",
+          "grid place-items-center overflow-hidden rounded-full bg-brand font-display font-bold text-primary-foreground",
           size === "lg" ? "size-12 text-base" : "size-11 text-sm",
         )}
       >
-        {initials}
+        {dp ? (
+          <img src={dp} alt={`${name} profile photo`} className="size-full object-cover" />
+        ) : (
+          initialsOf(name)
+        )}
       </span>
       {online !== undefined && (
         <span
@@ -85,39 +95,39 @@ function Avatar({
 
 function ChatPage() {
   const navigate = useNavigate();
-  const { session, ready, messages, unread } = useChat();
+  const { ready, session, me, accounts, messages } = useChat();
   const [selected, setSelected] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [draft, setDraft] = useState("");
-  const [attachment, setAttachment] = useState<string | null>(null);
+  const [attachment, setAttachment] = useState<{ data: string; kind: MediaKind } | null>(null);
   const [emoji, setEmoji] = useState(false);
   const [typing, setTyping] = useState<string | null>(null);
+  const [recording, setRecording] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
 
   useEffect(() => {
     if (ready && !session) navigate({ to: "/auth", replace: true });
   }, [ready, session, navigate]);
 
-  const friends = useMemo(() => {
+  const peers = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const list = q
-      ? FRIENDS.filter(
-          (f) => f.name.toLowerCase().includes(q) || f.handle.toLowerCase().includes(q),
-        )
-      : FRIENDS;
+    const list = accounts.filter(
+      (a) => a.id !== session && (!q || a.username.toLowerCase().includes(q)),
+    );
     return [...list].sort((a, b) => {
-      const la = lastMessageFor(messages, a.id)?.at ?? "";
-      const lb = lastMessageFor(messages, b.id)?.at ?? "";
+      const la = session ? lastMessageFor(messages, session, a.id)?.at ?? "" : "";
+      const lb = session ? lastMessageFor(messages, session, b.id)?.at ?? "" : "";
       return lb.localeCompare(la);
     });
-  }, [query, messages]);
+  }, [accounts, query, messages, session]);
 
-  const friend = FRIENDS.find((f) => f.id === selected) ?? null;
-  const thread = selected ? conversationFor(messages, selected) : [];
+  const peer = peers.find((p) => p.id === selected) ?? null;
+  const thread = session && selected ? conversationFor(messages, session, selected) : [];
 
   useEffect(() => {
-    if (selected) clearUnread(selected);
+    if (selected) markSeen(selected);
   }, [selected, messages.length]);
 
   useEffect(() => {
@@ -126,62 +136,103 @@ function ChatPage() {
 
   function handleSend(e: React.FormEvent) {
     e.preventDefault();
-    if (!friend) return;
+    if (!peer) return;
     const text = draft.trim();
     if (!text && !attachment) return;
-    sendMessage(friend.id, text || "Sent a photo", attachment ?? undefined);
+    const label =
+      text ||
+      (attachment?.kind === "video"
+        ? "Sent a video"
+        : attachment?.kind === "audio"
+          ? "Voice note"
+          : "Sent a photo");
+    sendMessage(peer.id, label, attachment ?? undefined);
     setDraft("");
     setAttachment(null);
     setEmoji(false);
 
-    const target = friend;
+    const target = peer;
     setTyping(target.id);
     window.setTimeout(() => {
       setTyping(null);
       const reply = AUTO_REPLIES[Math.floor(Math.random() * AUTO_REPLIES.length)]!;
-      receiveMessage(target.id, reply, false);
-      toast(`${target.name}`, { description: reply, icon: <Bell className="size-4" /> });
+      receiveMessage(target.id, reply);
+      toast(target.username, { description: reply, icon: <Bell className="size-4" /> });
     }, 1800);
   }
 
   function pickFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    const kind: MediaKind = file.type.startsWith("video")
+      ? "video"
+      : file.type.startsWith("audio")
+        ? "audio"
+        : "image";
     const reader = new FileReader();
-    reader.onload = () => setAttachment(String(reader.result));
+    reader.onload = () => setAttachment({ data: String(reader.result), kind });
     reader.readAsDataURL(file);
     e.target.value = "";
   }
 
-  if (!session) return null;
+  async function toggleRecording() {
+    if (recording) {
+      recorderRef.current?.stop();
+      setRecording(false);
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const rec = new MediaRecorder(stream);
+      const chunks: Blob[] = [];
+      rec.ondataavailable = (ev) => chunks.push(ev.data);
+      rec.onstop = () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const reader = new FileReader();
+        reader.onload = () => setAttachment({ data: String(reader.result), kind: "audio" });
+        reader.readAsDataURL(new Blob(chunks, { type: "audio/webm" }));
+      };
+      recorderRef.current = rec;
+      rec.start();
+      setRecording(true);
+    } catch {
+      toast("Microphone unavailable", { description: "Allow mic access to record a voice note." });
+    }
+  }
+
+  if (!me || !session) return null;
 
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto flex min-h-screen max-w-6xl md:gap-4 md:px-4 md:py-4">
-        {/* Friends list */}
         <aside
           className={cn(
             "flex w-full flex-col md:w-80 md:shrink-0 md:rounded-3xl md:bg-card md:shadow-soft",
-            friend && "hidden md:flex",
+            peer && "hidden md:flex",
           )}
         >
           <div className="sticky top-0 z-10 rounded-b-3xl bg-night px-4 py-4 text-primary-foreground md:rounded-3xl">
             <div className="flex items-center gap-3">
-              <Avatar initials={session.slice(0, 2).toUpperCase()} online size="lg" />
+              <button
+                type="button"
+                onClick={() => navigate({ to: "/messages" })}
+                aria-label="Back"
+                className="press grid size-9 place-items-center rounded-full bg-primary-foreground/15"
+              >
+                <ArrowLeft className="size-4" />
+              </button>
+              <Avatar name={me.username} dp={me.dp} online size="lg" />
               <div className="min-w-0 flex-1">
-                <p className="truncate font-display text-base font-bold">{session}</p>
+                <p className="truncate font-display text-base font-bold">{me.username}</p>
                 <p className="text-xs text-primary-foreground/70">Online</p>
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  signOut();
-                  navigate({ to: "/auth", replace: true });
-                }}
-                aria-label="Sign out"
+                onClick={() => navigate({ to: "/chat-settings" })}
+                aria-label="Chat settings"
                 className="press grid size-9 place-items-center rounded-full bg-primary-foreground/15"
               >
-                <LogOut className="size-4" />
+                <Settings className="size-4" />
               </button>
             </div>
             <div className="relative mt-4">
@@ -189,37 +240,39 @@ function ChatPage() {
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search friends"
+                placeholder="Search accounts"
                 className="w-full rounded-full bg-primary-foreground/15 py-2.5 pl-10 pr-3.5 text-sm text-primary-foreground outline-none placeholder:text-primary-foreground/60"
               />
             </div>
           </div>
 
           <div className="flex-1 space-y-1 overflow-y-auto px-2 py-3">
-            {friends.map((f) => {
-              const last = lastMessageFor(messages, f.id);
-              const count = unread[f.id] ?? 0;
+            {peers.map((p) => {
+              const last = lastMessageFor(messages, session, p.id);
+              const count = unreadCount(messages, session, p.id);
               return (
                 <button
-                  key={f.id}
+                  key={p.id}
                   type="button"
-                  onClick={() => setSelected(f.id)}
+                  onClick={() => setSelected(p.id)}
                   className={cn(
                     "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors",
-                    selected === f.id ? "bg-secondary" : "hover:bg-secondary/60",
+                    selected === p.id ? "bg-secondary" : "hover:bg-secondary/60",
                   )}
                 >
-                  <Avatar initials={f.avatar} online={f.online} />
+                  <Avatar name={p.username} dp={p.dp} online={p.online} />
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-2">
-                      <span className="truncate text-sm font-bold">{f.name}</span>
+                      <span className="truncate text-sm font-bold">{p.username}</span>
                       <span className="ml-auto shrink-0 text-[11px] text-muted-foreground">
                         {last ? formatRelative(last.at) : ""}
                       </span>
                     </span>
                     <span className="mt-0.5 flex items-center gap-2">
                       <span className="truncate text-xs text-muted-foreground">
-                        {last ? `${last.from === "me" ? "You: " : ""}${last.text}` : f.lastActive}
+                        {last
+                          ? `${last.from === session ? "You: " : ""}${last.text}`
+                          : p.lastActive ?? p.bio ?? "Say hello"}
                       </span>
                       {count > 0 && (
                         <span className="ml-auto grid size-5 shrink-0 place-items-center rounded-full bg-brand text-[10px] font-bold text-primary-foreground">
@@ -231,82 +284,94 @@ function ChatPage() {
                 </button>
               );
             })}
-            {!friends.length && (
+            {!peers.length && (
               <p className="px-3 py-8 text-center text-sm text-muted-foreground">
-                No friends match “{query}”.
+                No accounts match “{query}”.
               </p>
             )}
           </div>
         </aside>
 
-        {/* Conversation */}
         <section
           className={cn(
             "flex min-w-0 flex-1 flex-col md:rounded-3xl md:bg-card md:shadow-soft",
-            !friend && "hidden md:flex",
+            !peer && "hidden md:flex",
           )}
         >
-          {friend ? (
+          {peer ? (
             <>
               <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-border/70 bg-background/90 px-3 py-3 backdrop-blur-md md:rounded-t-3xl md:bg-card/90">
                 <button
                   type="button"
                   onClick={() => setSelected(null)}
-                  aria-label="Back to friends"
+                  aria-label="Back to accounts"
                   className="press grid size-9 place-items-center rounded-full bg-secondary md:hidden"
                 >
                   <ArrowLeft className="size-4" />
                 </button>
-                <Avatar initials={friend.avatar} online={friend.online} />
+                <Avatar name={peer.username} dp={peer.dp} online={peer.online} />
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-bold">{friend.name}</p>
+                  <p className="truncate text-sm font-bold">{peer.username}</p>
                   <p className="text-xs text-muted-foreground">
-                    {typing === friend.id
+                    {typing === peer.id
                       ? "typing…"
-                      : friend.online
+                      : peer.online
                         ? "Online"
-                        : friend.lastActive}
+                        : peer.lastActive ?? "Offline"}
                   </p>
                 </div>
               </header>
 
               <div className="flex-1 space-y-2.5 overflow-y-auto px-4 py-4">
-                {thread.map((m) => (
-                  <div
-                    key={m.id}
-                    className={cn("flex", m.from === "me" ? "justify-end" : "justify-start")}
-                  >
-                    <div
-                      className={cn(
-                        "max-w-[78%] rounded-3xl px-4 py-2.5 text-sm shadow-soft",
-                        m.from === "me"
-                          ? "rounded-br-lg bg-primary text-primary-foreground"
-                          : "rounded-bl-lg bg-secondary text-secondary-foreground",
-                      )}
-                    >
-                      {m.image && (
-                        <img
-                          src={m.image}
-                          alt="Shared attachment"
-                          className="mb-2 max-h-56 w-full rounded-2xl object-cover"
-                        />
-                      )}
-                      <p className="whitespace-pre-wrap break-words">{m.text}</p>
-                      <p
+                {thread.map((m) => {
+                  const mine = m.from === session;
+                  return (
+                    <div key={m.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
+                      <div
                         className={cn(
-                          "mt-1 flex items-center justify-end gap-1 text-[10px]",
-                          m.from === "me"
-                            ? "text-primary-foreground/70"
-                            : "text-muted-foreground",
+                          "max-w-[78%] rounded-3xl px-4 py-2.5 text-sm shadow-soft",
+                          mine
+                            ? "rounded-br-lg bg-primary text-primary-foreground"
+                            : "rounded-bl-lg bg-secondary text-secondary-foreground",
                         )}
                       >
-                        {formatTime(m.at)}
-                        {m.from === "me" && <Check className="size-3" />}
-                      </p>
+                        {m.media && m.mediaKind === "image" && (
+                          <img
+                            src={m.media}
+                            alt="Shared photo"
+                            className="mb-2 max-h-56 w-full rounded-2xl object-cover"
+                          />
+                        )}
+                        {m.media && m.mediaKind === "video" && (
+                          <video
+                            src={m.media}
+                            controls
+                            className="mb-2 max-h-56 w-full rounded-2xl object-cover"
+                          />
+                        )}
+                        {m.media && m.mediaKind === "audio" && (
+                          <audio src={m.media} controls className="mb-2 w-52" />
+                        )}
+                        <p className="whitespace-pre-wrap break-words">{m.text}</p>
+                        <p
+                          className={cn(
+                            "mt-1 flex items-center justify-end gap-1 text-[10px]",
+                            mine ? "text-primary-foreground/70" : "text-muted-foreground",
+                          )}
+                        >
+                          {formatTime(m.at)}
+                          {mine &&
+                            (m.seen ? (
+                              <CheckCheck className="size-3" />
+                            ) : (
+                              <Check className="size-3" />
+                            ))}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
-                {typing === friend.id && (
+                  );
+                })}
+                {typing === peer.id && (
                   <div className="flex justify-start">
                     <div className="flex items-center gap-1 rounded-3xl rounded-bl-lg bg-secondary px-4 py-3">
                       {[0, 1, 2].map((i) => (
@@ -339,12 +404,26 @@ function ChatPage() {
 
               {attachment && (
                 <div className="flex items-center gap-3 border-t border-border/70 px-4 py-2">
-                  <img
-                    src={attachment}
-                    alt="Attachment preview"
-                    className="size-12 rounded-xl object-cover"
-                  />
-                  <p className="text-xs text-muted-foreground">Photo ready to send</p>
+                  {attachment.kind === "image" ? (
+                    <img
+                      src={attachment.data}
+                      alt="Attachment preview"
+                      className="size-12 rounded-xl object-cover"
+                    />
+                  ) : attachment.kind === "video" ? (
+                    <video src={attachment.data} className="size-12 rounded-xl object-cover" />
+                  ) : (
+                    <span className="grid size-12 place-items-center rounded-xl bg-secondary">
+                      <Mic className="size-5" />
+                    </span>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    {attachment.kind === "audio"
+                      ? "Voice note ready to send"
+                      : attachment.kind === "video"
+                        ? "Video ready to send"
+                        : "Photo ready to send"}
+                  </p>
                   <button
                     type="button"
                     onClick={() => setAttachment(null)}
@@ -371,15 +450,28 @@ function ChatPage() {
                 <button
                   type="button"
                   onClick={() => fileRef.current?.click()}
-                  aria-label="Attach image or file"
+                  aria-label="Attach photo or video"
                   className="press grid size-10 shrink-0 place-items-center rounded-full bg-secondary text-secondary-foreground"
                 >
                   <ImagePlus className="size-[18px]" />
                 </button>
+                <button
+                  type="button"
+                  onClick={toggleRecording}
+                  aria-label={recording ? "Stop recording" : "Record a voice note"}
+                  className={cn(
+                    "press grid size-10 shrink-0 place-items-center rounded-full",
+                    recording
+                      ? "bg-destructive text-destructive-foreground"
+                      : "bg-secondary text-secondary-foreground",
+                  )}
+                >
+                  {recording ? <Square className="size-4" /> : <Mic className="size-[18px]" />}
+                </button>
                 <input
                   ref={fileRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/*,video/*"
                   onChange={pickFile}
                   className="hidden"
                 />
@@ -393,7 +485,7 @@ function ChatPage() {
                     }
                   }}
                   rows={1}
-                  placeholder={`Message ${friend.name.split(" ")[0]}…`}
+                  placeholder={`Message ${peer.username}…`}
                   className="max-h-28 min-h-10 flex-1 resize-none rounded-3xl border border-border bg-card px-4 py-2.5 text-sm outline-none focus:border-primary"
                 />
                 <button
@@ -407,7 +499,7 @@ function ChatPage() {
             </>
           ) : (
             <div className="hidden flex-1 flex-col items-center justify-center gap-2 p-10 text-center md:flex">
-              <p className="font-display text-lg font-bold">Pick a friend to start chatting</p>
+              <p className="font-display text-lg font-bold">Pick an account to start chatting</p>
               <p className="max-w-xs text-sm text-muted-foreground">
                 Your conversations stay on this device.
               </p>
