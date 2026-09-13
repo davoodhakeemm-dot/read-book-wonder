@@ -246,3 +246,36 @@ export function initialsOf(username: string) {
   const parts = username.replace(/[._-]+/g, " ").trim().split(/\s+/);
   return (parts[0]?.[0] ?? "?").concat(parts[1]?.[0] ?? "").toUpperCase();
 }
+
+/** Public handle shown next to a username so every account has a clear identity. */
+export function handleOf(account: Account) {
+  const slug = account.username.toLowerCase().replace(/[^a-z0-9]+/g, "");
+  return `@${slug || "reader"}.${account.id.slice(-4)}`;
+}
+
+const ONLINE_WINDOW = 2 * 60 * 1000;
+
+/** Someone counts as online while their heartbeat is fresh. */
+export function isOnline(account: Account, meId?: string | null) {
+  if (meId && account.id === meId) return true;
+  if (!account.lastActive) return Boolean(account.online);
+  return Date.now() - new Date(account.lastActive).getTime() < ONLINE_WINDOW;
+}
+
+export function presenceLabel(account: Account, meId?: string | null) {
+  if (isOnline(account, meId)) return "Online";
+  if (account.lastActive) return `Active ${formatRelative(account.lastActive)} ago`;
+  return "Offline";
+}
+
+/** Keep the signed-in account's presence fresh. */
+export function touchPresence() {
+  const id = state.session;
+  if (!id) return;
+  set({
+    accounts: state.accounts.map((a) =>
+      a.id === id ? { ...a, online: true, lastActive: new Date().toISOString() } : a,
+    ),
+  });
+}
+
