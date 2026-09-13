@@ -396,13 +396,14 @@ function ChatPage() {
                 >
                   <ArrowLeft className="size-4" />
                 </button>
-                <Avatar name={peer.username} dp={peer.dp} online={peer.online} />
+                <Avatar name={peer.username} dp={peer.dp} online={isOnline(peer, session)} />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-bold">{peer.username}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {peer.online ? "Online" : (peer.lastActive ?? "Offline")}
+                  <p className="truncate text-xs text-muted-foreground">
+                    {handleOf(peer)} · {presenceLabel(peer, session)}
                   </p>
                 </div>
+
               </header>
 
               <div className="flex-1 space-y-2.5 overflow-y-auto px-4 py-4">
