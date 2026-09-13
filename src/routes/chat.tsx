@@ -148,7 +148,7 @@ function ChatPage() {
     });
   }, [accounts, query, messages, session]);
 
-  const peer = peers.find((p) => p.id === selected) ?? null;
+  const peer = accounts.find((p) => p.id === selected && p.id !== session) ?? null;
   const thread = session && selected ? conversationFor(messages, session, selected) : [];
 
   useEffect(() => {
