@@ -278,49 +278,105 @@ function ChatPage() {
           </div>
 
           <div className="flex-1 space-y-1 overflow-y-auto px-2 py-3">
-            {peers.map((p) => {
-              const last = lastMessageFor(messages, session, p.id);
-              const count = unreadCount(messages, session, p.id);
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setSelected(p.id)}
-                  className={cn(
-                    "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors",
-                    selected === p.id ? "bg-secondary" : "hover:bg-secondary/60",
-                  )}
-                >
-                  <Avatar name={p.username} dp={p.dp} online={p.online} />
-                  <span className="min-w-0 flex-1">
-                    <span className="flex items-center gap-2">
-                      <span className="truncate text-sm font-bold">{p.username}</span>
-                      <span className="ml-auto shrink-0 text-[11px] text-muted-foreground">
-                        {last ? formatRelative(last.at) : ""}
-                      </span>
-                    </span>
-                    <span className="mt-0.5 flex items-center gap-2">
-                      <span className="truncate text-xs text-muted-foreground">
-                        {last
-                          ? `${last.from === session ? "You: " : ""}${last.text}`
-                          : p.lastActive ?? p.bio ?? "Say hello"}
-                      </span>
-                      {count > 0 && (
-                        <span className="ml-auto grid size-5 shrink-0 place-items-center rounded-full bg-brand text-[10px] font-bold text-primary-foreground">
-                          {count}
-                        </span>
+            <div className="flex items-center justify-between px-3 pb-2">
+              <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+                {directory ? "All accounts" : "Chats"}
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                {directory
+                  ? `${directoryList.length} total · ${directoryList.filter((a) => isOnline(a, session)).length} online`
+                  : `${peers.length} people`}
+              </p>
+            </div>
+
+            {directory
+              ? directoryList.map((a) => {
+                  const online = isOnline(a, session);
+                  const isMe = a.id === session;
+                  return (
+                    <button
+                      key={a.id}
+                      type="button"
+                      disabled={isMe}
+                      onClick={() => {
+                        setSelected(a.id);
+                        setDirectory(false);
+                      }}
+                      className={cn(
+                        "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors",
+                        isMe ? "bg-secondary/40" : "hover:bg-secondary/60",
                       )}
-                    </span>
-                  </span>
-                </button>
-              );
-            })}
-            {!peers.length && (
+                    >
+                      <Avatar name={a.username} dp={a.dp} online={online} />
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-center gap-2">
+                          <span className="truncate text-sm font-bold">{a.username}</span>
+                          {isMe && (
+                            <span className="shrink-0 rounded-full bg-brand/15 px-2 py-0.5 text-[10px] font-bold text-brand">
+                              You
+                            </span>
+                          )}
+                        </span>
+                        <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+                          {handleOf(a)}
+                        </span>
+                      </span>
+                      <span
+                        className={cn(
+                          "shrink-0 text-[11px] font-semibold",
+                          online ? "text-emerald-600" : "text-muted-foreground",
+                        )}
+                      >
+                        {presenceLabel(a, session)}
+                      </span>
+                    </button>
+                  );
+                })
+              : peers.map((p) => {
+                  const last = lastMessageFor(messages, session, p.id);
+                  const count = unreadCount(messages, session, p.id);
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setSelected(p.id)}
+                      className={cn(
+                        "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors",
+                        selected === p.id ? "bg-secondary" : "hover:bg-secondary/60",
+                      )}
+                    >
+                      <Avatar name={p.username} dp={p.dp} online={isOnline(p, session)} />
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-center gap-2">
+                          <span className="truncate text-sm font-bold">{p.username}</span>
+                          <span className="ml-auto shrink-0 text-[11px] text-muted-foreground">
+                            {last ? formatRelative(last.at) : ""}
+                          </span>
+                        </span>
+                        <span className="mt-0.5 flex items-center gap-2">
+                          <span className="truncate text-xs text-muted-foreground">
+                            {last
+                              ? `${last.from === session ? "You: " : ""}${last.text}`
+                              : handleOf(p)}
+                          </span>
+                          {count > 0 && (
+                            <span className="ml-auto grid size-5 shrink-0 place-items-center rounded-full bg-brand text-[10px] font-bold text-primary-foreground">
+                              {count}
+                            </span>
+                          )}
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
+
+            {(directory ? directoryList.length === 0 : peers.length === 0) && (
               <p className="px-3 py-8 text-center text-sm text-muted-foreground">
-                No accounts match “{query}”.
+                {query ? `No accounts match “${query}”.` : "No other accounts yet."}
               </p>
             )}
           </div>
+
         </aside>
 
         <section
