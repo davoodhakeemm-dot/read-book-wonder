@@ -240,8 +240,23 @@ function ChatPage() {
               <Avatar name={me.username} dp={me.dp} online size="lg" />
               <div className="min-w-0 flex-1">
                 <p className="truncate font-display text-base font-bold">{me.username}</p>
-                <p className="text-xs text-primary-foreground/70">Online</p>
+                <p className="truncate text-xs text-primary-foreground/70">
+                  {handleOf(me)} · Online
+                </p>
               </div>
+              <button
+                type="button"
+                onClick={() => setDirectory((s) => !s)}
+                aria-label="View all accounts"
+                aria-pressed={directory}
+                className={cn(
+                  "press grid size-9 place-items-center rounded-full",
+                  directory ? "bg-brand text-primary-foreground" : "bg-primary-foreground/15",
+                )}
+              >
+                <Users className="size-4" />
+              </button>
+
               <button
                 type="button"
                 onClick={() => navigate({ to: "/chat-settings" })}
