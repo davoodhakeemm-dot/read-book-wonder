@@ -10,6 +10,7 @@ import {
   Settings,
   Smile,
   Square,
+  Users,
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
