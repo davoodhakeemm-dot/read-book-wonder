@@ -103,7 +103,8 @@ function ChatPage() {
   const [draft, setDraft] = useState("");
   const [attachment, setAttachment] = useState<{ data: string; kind: MediaKind } | null>(null);
   const [emoji, setEmoji] = useState(false);
-  
+  const [directory, setDirectory] = useState(false);
+  const [, setTick] = useState(0);
   const [recording, setRecording] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
@@ -112,6 +113,28 @@ function ChatPage() {
   useEffect(() => {
     if (ready && !session) navigate({ to: "/auth", replace: true });
   }, [ready, session, navigate]);
+
+  // Keep my presence fresh and refresh everyone's online/offline signal.
+  useEffect(() => {
+    if (!session) return;
+    touchPresence();
+    const id = window.setInterval(() => {
+      touchPresence();
+      setTick((t) => t + 1);
+    }, 30_000);
+    return () => window.clearInterval(id);
+  }, [session]);
+
+  const directoryList = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return accounts
+      .filter((a) => !q || a.username.toLowerCase().includes(q) || handleOf(a).includes(q))
+      .sort((a, b) => {
+        const oa = Number(isOnline(a, session)) - Number(isOnline(b, session));
+        return oa !== 0 ? -oa : a.username.localeCompare(b.username);
+      });
+  }, [accounts, query, session]);
+
 
   const peers = useMemo(() => {
     const q = query.trim().toLowerCase();
